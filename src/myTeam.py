@@ -23,7 +23,7 @@ from keyboardAgents import KeyboardAgent
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'SmarterAgent', second = 'KeyboardAgent'):
+               first = 'SmarterAgent', second = 'PowerAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -46,41 +46,72 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
+
+class PowerAgent(CaptureAgent):
+
+  def registerInitialState(self, gameState):
+    CaptureAgent.registerInitialState(self, gameState)
+    self.home = gameState.getInitialAgentPosition(self.index)
+
+  def chooseAction(self, gameState):
+    actions = gameState.getLegalActions(self.index) 
+    if len(self.getCapsules(gameState)) > 0:
+      TargetPlace = self.getCapsules(gameState)[0]
+    else: 
+      TargetPlace = self.home
+        
+    minDistance = 9999
+    for action in actions:
+      successor = gameState.generateSuccessor(self.index, action)
+      NextPos = successor.getAgentState(self.index).getPosition()
+
+      NextDistanceToFood = self.getMazeDistance(NextPos, TargetPlace)
+      if NextDistanceToFood < minDistance: 
+        minDistance = NextDistanceToFood
+        GoodAction = action
+
+    return GoodAction
+    
+
+
+
+
+
 class SmarterAgent(CaptureAgent):
 
-    def registerInitialState(self, gameState):
-        CaptureAgent.registerInitialState(self, gameState)
-        self.home = gameState.getInitialAgentPosition(self.index)
+  def registerInitialState(self, gameState):
+    CaptureAgent.registerInitialState(self, gameState)
+    self.home = gameState.getInitialAgentPosition(self.index)
 
-    def chooseAction(self, gameState):
-        actions = gameState.getLegalActions(self.index) 
-        if gameState.getAgentState(self.index).numCarrying >= 5:
-          TargetPlace = self.home
-        else: 
-          TargetPlace = self.getTargetPelletPosition(gameState)
+  def chooseAction(self, gameState):
+    actions = gameState.getLegalActions(self.index) 
+    if gameState.getAgentState(self.index).numCarrying >= 5:
+      TargetPlace = self.home
+    else: 
+      TargetPlace = self.getTargetPelletPosition(gameState)
         
-        minDistance = 9999
-        for action in actions:
-            successor = gameState.generateSuccessor(self.index, action)
-            NextPos = successor.getAgentState(self.index).getPosition()
+    minDistance = 9999
+    for action in actions:
+      successor = gameState.generateSuccessor(self.index, action)
+      NextPos = successor.getAgentState(self.index).getPosition()
 
-            NextDistanceToFood = self.getMazeDistance(NextPos, TargetPlace)
-            if NextDistanceToFood < minDistance: 
-                minDistance = NextDistanceToFood
-                GoodAction = action
+      NextDistanceToFood = self.getMazeDistance(NextPos, TargetPlace)
+      if NextDistanceToFood < minDistance: 
+        minDistance = NextDistanceToFood
+        GoodAction = action
 
-        return GoodAction
+    return GoodAction
     
-    def getTargetPelletPosition(self, gameState):
-        foodList = self.getFood(gameState).asList()   
-        myPos = gameState.getAgentState(self.index).getPosition()
+  def getTargetPelletPosition(self, gameState):
+    foodList = self.getFood(gameState).asList()   
+    myPos = gameState.getAgentState(self.index).getPosition()
 
-        minDistance = 9999
-        for food in foodList:
-            DistanceToFood = self.getMazeDistance(myPos, food)
-            if DistanceToFood < minDistance:
-                minDistance = DistanceToFood
-                FoodPosition = food
+    minDistance = 9999
+    for food in foodList:
+      DistanceToFood = self.getMazeDistance(myPos, food)
+      if DistanceToFood < minDistance:
+        minDistance = DistanceToFood
+        FoodPosition = food
 
-        return FoodPosition
+    return FoodPosition
 
