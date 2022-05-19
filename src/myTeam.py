@@ -23,7 +23,7 @@ from keyboardAgents import KeyboardAgent
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'SmarterAgent', second = 'PowerAgent'):
+               first = 'week12DefAgent', second = 'week12AtkAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -46,9 +46,108 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
+class week12DefAgent(CaptureAgent):
+  def registerInitialState(self, gameState):
+    CaptureAgent.registerInitialState(self, gameState)
+    self.home = gameState.getInitialAgentPosition(self.index)
+    self.fortress = self.getFortressPosition(gameState)
+
+  def getFortressPosition(self, gameState):
+    # standard = (15, 8)
+    # myCapsules = self.getCapsulesYouAreDefending(gameState)
+    # minDistance = 9999 
+    # for myCapsule in myCapsules:
+    #   toFortress = util.manhattanDistance(standard, myCapsule)
+    #   if minDistance > toFortress:
+    #     fortress = myCapsule
+    #     minDistance = toFortress
+
+    myFoods = self.getFoodYouAreDefending(gameState).asList()
+    # oppHome = gameState.getInitialAgentPosition(self.getOpponents(gameState)[0])
+    if self.red:
+      oppHome = (32, 16)
+    else:
+      oppHome = (1, 1)
+      
+    minDistance = 9999
+    for myFood in myFoods:
+      DistanceToFood = self.getMazeDistance(oppHome, myFood)
+      if DistanceToFood < minDistance:
+        minDistance = DistanceToFood
+        fortress = myFood
+
+    return fortress
+
+  def chooseAction(self, gameState):
+    _, action = self.getActionViaGoal(gameState, self.fortress)
+    minDistance = 9999
+    for opp in self.getOpponents(gameState):
+      oppPosition = self.getCurrentObservation().getAgentState(opp).getPosition()
+      if oppPosition is not None:
+        toOpp = self.getActionViaGoal(gameState, oppPosition)
+        if toOpp[0] < minDistance:
+          action = toOpp[1]
+          minDistance = toOpp[0]
+
+    return action
+  
+  def getActionViaGoal(self, gameState, goal):
+    minDistance = 9999
+    actions = gameState.getLegalActions(self.index) 
+    for action in actions:
+      successor = gameState.generateSuccessor(self.index, action)
+      NextPos = successor.getAgentState(self.index).getPosition()
+
+      if (self.red and NextPos[0] >= 17) or (~self.red and NextPos[0] <= 16):
+        continue
+
+      NextDistanceToGoal = self.getMazeDistance(NextPos, goal)
+      if NextDistanceToGoal < minDistance: 
+        minDistance = NextDistanceToGoal
+        GoodAction = action
+
+    return minDistance, GoodAction
+
+  
+class week12AtkAgent(CaptureAgent):
+  def registerInitialState(self, gameState):
+    CaptureAgent.registerInitialState(self, gameState)
+    self.home = gameState.getInitialAgentPosition(self.index)
+
+  def chooseAction(self, gameState):
+    actions = gameState.getLegalActions(self.index) 
+    if gameState.getAgentState(self.index).numCarrying >= 3:
+      TargetPlace = self.home
+    else: 
+      TargetPlace = self.getTargetPelletPosition(gameState)
+        
+    minDistance = 9999
+    for action in actions:
+      successor = gameState.generateSuccessor(self.index, action)
+      NextPos = successor.getAgentState(self.index).getPosition()
+
+      NextDistanceToFood = self.getMazeDistance(NextPos, TargetPlace)
+      if NextDistanceToFood < minDistance: 
+        minDistance = NextDistanceToFood
+        GoodAction = action
+
+    return GoodAction
+    
+  def getTargetPelletPosition(self, gameState):
+    foodList = self.getFood(gameState).asList()   
+    myPos = gameState.getAgentState(self.index).getPosition()
+
+    minDistance = 9999
+    for food in foodList:
+      DistanceToFood = self.getMazeDistance(myPos, food)
+      if DistanceToFood < minDistance:
+        minDistance = DistanceToFood
+        FoodPosition = food
+
+    return FoodPosition
+
 
 class PowerAgent(CaptureAgent):
-
   def registerInitialState(self, gameState):
     CaptureAgent.registerInitialState(self, gameState)
     self.home = gameState.getInitialAgentPosition(self.index)
@@ -73,12 +172,7 @@ class PowerAgent(CaptureAgent):
     return GoodAction
     
 
-
-
-
-
 class SmarterAgent(CaptureAgent):
-
   def registerInitialState(self, gameState):
     CaptureAgent.registerInitialState(self, gameState)
     self.home = gameState.getInitialAgentPosition(self.index)
