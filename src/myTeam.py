@@ -46,7 +46,7 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-class week12DefAgent(CaptureAgent):
+class week13DefAgent(CaptureAgent):
   def registerInitialState(self, gameState):
     CaptureAgent.registerInitialState(self, gameState)
     self.home = gameState.getInitialAgentPosition(self.index)
@@ -98,7 +98,7 @@ class week12DefAgent(CaptureAgent):
       successor = gameState.generateSuccessor(self.index, action)
       NextPos = successor.getAgentState(self.index).getPosition()
 
-      if (self.red and NextPos[0] >= 17) or (~self.red and NextPos[0] <= 16):
+      if (self.red and NextPos[0] >= 17) or (not self.red and NextPos[0] <= 16):
         continue
 
       NextDistanceToGoal = self.getMazeDistance(NextPos, goal)
@@ -109,7 +109,7 @@ class week12DefAgent(CaptureAgent):
     return minDistance, GoodAction
 
   
-class week12AtkAgent(CaptureAgent):
+class week13AtkAgent(CaptureAgent):
   def registerInitialState(self, gameState):
     CaptureAgent.registerInitialState(self, gameState)
     self.home = gameState.getInitialAgentPosition(self.index)
