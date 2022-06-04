@@ -16,7 +16,6 @@ from captureAgents import CaptureAgent
 import random, time, util
 from game import Directions
 import game
-import numpy as np
 from keyboardAgents import KeyboardAgent
 
 #################
@@ -24,7 +23,7 @@ from keyboardAgents import KeyboardAgent
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'team3AtkAgent', second = 'team3DefAgent'):
+               first = 'week12DefAgent', second = 'week12AtkAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -46,41 +45,6 @@ def createTeam(firstIndex, secondIndex, isRed,
 ##########
 # Agents #
 ##########
-
-def getActionfromMode(mode, gameState):
-  actions = gameState.getLegalActions(self.index)
-  if mode == 'collector':
-
-class team3Agents(CaptureAgent):
-  def registerInitialState(self, gameState):
-    CaptureAgent.registerInitialState(self, gameState)
-
-  def chooseAction(self, gameState):
-    action = getActionfromMode('collector', gameState)
-    return action
-
-
-
-class team3AtkAgent(team3Agents):
-  def registerInitialState(self, gameState):
-    CaptureAgent.registerInitialState(self, gameState)
-
-  def chooseAction(self, gameState):
-    action = getActionfromMode('collector', gameState)
-    return action
-
-class team3DefAgent(team3Agents):
-  def registerInitialState(self, gameState):
-    CaptureAgent.registerInitialState(self, gameState)
-    
-  def chooseAction(self, gameState):
-    actions = gameState.getLegalActions(self.index)
-    return actions[0]
-
-
-
-
-
 
 class week13DefAgent(CaptureAgent):
   def registerInitialState(self, gameState):
@@ -207,4 +171,41 @@ class PowerAgent(CaptureAgent):
 
     return GoodAction
     
+
+class SmarterAgent(CaptureAgent):
+  def registerInitialState(self, gameState):
+    CaptureAgent.registerInitialState(self, gameState)
+    self.home = gameState.getInitialAgentPosition(self.index)
+
+  def chooseAction(self, gameState):
+    actions = gameState.getLegalActions(self.index) 
+    if gameState.getAgentState(self.index).numCarrying >= 5:
+      TargetPlace = self.home
+    else: 
+      TargetPlace = self.getTargetPelletPosition(gameState)
+        
+    minDistance = 9999
+    for action in actions:
+      successor = gameState.generateSuccessor(self.index, action)
+      NextPos = successor.getAgentState(self.index).getPosition()
+
+      NextDistanceToFood = self.getMazeDistance(NextPos, TargetPlace)
+      if NextDistanceToFood < minDistance: 
+        minDistance = NextDistanceToFood
+        GoodAction = action
+
+    return GoodAction
+    
+  def getTargetPelletPosition(self, gameState):
+    foodList = self.getFood(gameState).asList()   
+    myPos = gameState.getAgentState(self.index).getPosition()
+
+    minDistance = 9999
+    for food in foodList:
+      DistanceToFood = self.getMazeDistance(myPos, food)
+      if DistanceToFood < minDistance:
+        minDistance = DistanceToFood
+        FoodPosition = food
+
+    return FoodPosition
 
