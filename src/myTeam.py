@@ -24,7 +24,7 @@ from keyboardAgents import KeyboardAgent
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'team3AtkAgent', second = 'team3DefAgent'):
+               first = 'team3AtkAgent', second = 'KeyboardAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -47,35 +47,68 @@ def createTeam(firstIndex, secondIndex, isRed,
 # Agents #
 ##########
 
-def getActionfromMode(mode, gameState):
-  actions = gameState.getLegalActions(self.index)
-  if mode == 'collector':
 
 class team3Agents(CaptureAgent):
   def registerInitialState(self, gameState):
     CaptureAgent.registerInitialState(self, gameState)
-
+    self.Walls = gameState.getWalls()
   def chooseAction(self, gameState):
-    action = getActionfromMode('collector', gameState)
+    action = self.getActionfromMode(gameState)
     return action
+
+  def pathWeight(self, idx, value, Wmap):
+    print(idx, value  )
+    if (value == 0) or (Wmap[idx] != 0) or self.Walls[idx[0]][idx[1]]:
+      return
+    else:
+      Wmap[idx] = value
+      Wmap = self.pathWeight((idx[0]+1, idx[1]), value-1, Wmap)
+      Wmap = self.pathWeight((idx[0]-1, idx[1]), value-1, Wmap)
+      Wmap = self.pathWeight((idx[0], idx[1]+1), value-1, Wmap)
+      Wmap = self.pathWeight((idx[0], idx[1]-1), value-1, Wmap)
+      return Wmap
+    
+  def getWeightField(self, foods, capsules):
+    field = np.zeros((33, 17))
+    for food in foods:
+      field += self.pathWeight(food, 3, np.zeros((33, 17)))
+    for capsule in capsules:
+      field += self.pathWeight(capsule, 5, np.zeros((33, 17)))
+    return field
+
+  def setMode(self, mode, gameState):
+    self.mode = mode
+    if mode == 'collector':
+      foods = self.getFood(gameState).asList()
+      capsules = self.getCapsules(gameState)
+      self.field = self.getWeightField(foods, capsules)
+      print(np.rot90(self.field, k=1))
+
+  def getActionfromMode(self, gameState):
+    actions = gameState.getLegalActions(self.index)
+    input()
+    if self.mode == 'collector':
+      #print(np.rot90(self.field))
+      pass
+    return actions[0]
+
 
 
 
 class team3AtkAgent(team3Agents):
   def registerInitialState(self, gameState):
-    CaptureAgent.registerInitialState(self, gameState)
+    team3Agents.registerInitialState(self, gameState)
+    self.setMode('collector', gameState)
 
   def chooseAction(self, gameState):
-    action = getActionfromMode('collector', gameState)
-    return action
+    return team3Agents.chooseAction(self, gameState)
 
 class team3DefAgent(team3Agents):
   def registerInitialState(self, gameState):
-    CaptureAgent.registerInitialState(self, gameState)
-    
+    team3Agents.registerInitialState(self, gameState)
+
   def chooseAction(self, gameState):
-    actions = gameState.getLegalActions(self.index)
-    return actions[0]
+    return team3Agents.chooseAction(self, gameState)
 
 
 
