@@ -16,6 +16,7 @@ from argparse import _get_action_name
 from captureAgents import CaptureAgent
 import random, time, util
 from game import Directions
+import numpy as np
 import game
 import distanceCalculator
 from keyboardAgents import KeyboardAgent
@@ -128,9 +129,9 @@ class team3Agents(CaptureAgent):
       return 
     if idx[0] not in range(1, 33) or idx[1] not in range(1, 17):
       return
-    if (self.Wmap[idx[0]][idx[1]] != 0) or self.Walls[idx[0]][idx[1]]:
+    if (self.Wmap[idx] != 0) or self.Walls[idx[0]][idx[1]]:
       return
-    self.Wmap[idx[0]][idx[1]] = value
+    self.Wmap[idx] = value
     self.pathWeight((idx[0]+1, idx[1]), value-1)
     self.pathWeight((idx[0]-1, idx[1]), value-1)
     self.pathWeight((idx[0], idx[1]+1), value-1)
@@ -144,18 +145,17 @@ class team3Agents(CaptureAgent):
     self.modeStep = 1
 
     if mode == 'collector':
-      field = [[0 for col in range(17)] for row in range(33)]
+      field = np.zeros((33, 17))
       for food in self.getFood(gameState).asList():
-        self.Wmap = [[0 for col in range(17)] for row in range(33)]
+        self.Wmap = np.zeros((33, 17))
         self.pathWeight(food, 3)
-        field = [[c + d for c, d in zip(a, b)] for a, b in zip(field, self.Wmap)]
+        field += self.Wmap
       for capsule in self.getCapsules(gameState):
-        self.Wmap = [[0 for col in range(17)] for row in range(33)]
+        self.Wmap = np.zeros((33, 17))
         self.pathWeight(capsule, 5)
-        field = [[c + d for c, d in zip(a, b)] for a, b in zip(field, self.Wmap)]
-      field = [a for line in field for a in line]
-      p = lambda i: field[i]
-      self.goal = max(range(len(field)), key=p)
+        field += self.Wmap
+      # print(np.rot90(self.field[17:,1:], k=1))
+      self.goal = field.argmax()
       self.goal = (self.goal//17, self.goal%17)
 
     elif mode == 'killer':
