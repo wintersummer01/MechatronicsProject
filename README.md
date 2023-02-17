@@ -1,6 +1,6 @@
 # IIT4312 Mechatronics Project
 
-Made by 최동하
+Made by 최동하  
 (Team3: **최동하**, 정회성, 경다녕, 김건우) 
 
 ## How to run 
@@ -10,7 +10,7 @@ myTeam.py 혹은 Team3.py 사용하시면 됩니다.
 -l RANDOM이 있으면 랜덤맵이 생성됩니다.   
 랜덤이 아닐 경우, 맵의 크기가 바뀌어 코드에 오류가 생기게 됩니다.   
 
-
+**★중요★ src 폴더에서 해당 코드를 실행해야 합니다.**  
 
 예시 코드 (빨간팀)
 
